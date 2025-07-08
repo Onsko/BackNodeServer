@@ -11,11 +11,12 @@ export const getUserData = async (req, res) => {
     if (!user) {
       return res.json({ success: false, message: 'User not found' });
     }
-
+   console.log(user)
     // ✅ Retourner les données utilisateur
     res.json({
       success: true,
       userData: {
+        id:user._id,
         name: user.name,
         isAccountVerified: user.isAccountVerified,
         email: user.email, // optionnel

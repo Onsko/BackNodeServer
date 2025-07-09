@@ -2,28 +2,23 @@ import userModel from "../models/userModel.js";
 
 export const getUserData = async (req, res) => {
   try {
-    // 🔁 On récupère userId injecté par le middleware userAuth
-    const userId = req.userId;
-
-    // 🔍 Vérifier si l'utilisateur existe
-    const user = await userModel.findById(userId);
+    const user = await userModel.findById(req.user.id).select('-password'); // exclut le password
 
     if (!user) {
-      return res.json({ success: false, message: 'User not found' });
+      return res.status(404).json({ success: false, message: 'Utilisateur non trouvé' });
     }
-   console.log(user)
-    // ✅ Retourner les données utilisateur
-    res.json({
-      success: true,
-      userData: {
-        id:user._id,
-        name: user.name,
-        isAccountVerified: user.isAccountVerified,
-        email: user.email, // optionnel
-      },
-    });
 
+    return res.json({
+      success: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role   // ✅ ICI on renvoie le rôle
+      }
+    });
   } catch (error) {
-    return res.json({ success: false, message: error.message });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
+

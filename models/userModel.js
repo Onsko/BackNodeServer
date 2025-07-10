@@ -10,6 +10,8 @@ const userSchema = new mongoose.Schema({
   resetOtp: { type: String, default: '' },
   resetOtpExpireAt: { type: Number, default: 0 },
   role: { type: String, enum: ['user', 'admin'], default: 'user' },  // <-- AJOUT DU ROLE ICI
+    isBlocked: { type: Boolean, default: false }, // ✅ ajouté
+
 });
 
 const userModel = mongoose.models.user || mongoose.model('user', userSchema);

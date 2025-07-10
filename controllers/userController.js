@@ -20,6 +20,7 @@ export const getUserData = async (req, res) => {
         name: user.name,
         isAccountVerified: user.isAccountVerified,
         email: user.email, // optionnel
+         role: user.role, // 👈 C'EST CE QUI MANQUAIT
       },
     });
 

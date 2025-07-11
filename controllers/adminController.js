@@ -4,12 +4,25 @@ import userModel from '../models/userModel.js';
 export const getAllUsers = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
+    const search = req.query.search || '';
     const limit = parseInt(req.query.limit) || 5;
     const skip = (page - 1) * limit;
+    console.log({search})
+      const filter = search
+      ? {
+          $or: [
+            { name: { $regex: search, $options: 'i' } },    // recherche insensible sur name
+            { email: { $regex: search, $options: 'i' } },   // recherche insensible sur email
+           
+          ],
+        }
+      : {};
 
-    const totalUsers = await userModel.countDocuments();
+    const totalUsers = await userModel.countDocuments(filter);
+
     const users = await userModel
-      .find()
+      .find(filter)
+    
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 }); // tri du plus récent au plus ancien

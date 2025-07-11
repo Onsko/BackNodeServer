@@ -4,11 +4,10 @@ import userModel from "../models/userModel.js";
 
 export const getUserData = async (req, res) => {
   try {
-    // ✅ Corrigé : récupérer user depuis req.user injecté par le middleware userAuth
-    const user = req.user;
+    const user = await userModel.findById(req.user.id).select('-password'); // exclut le password
 
     if (!user) {
-      return res.json({ success: false, message: 'User not found' });
+      return res.status(404).json({ success: false, message: 'Utilisateur non trouvé' });
     }
 
     // ✅ Retourner les données utilisateur
@@ -23,7 +22,17 @@ export const getUserData = async (req, res) => {
       },
     });
 
+    return res.json({
+      success: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role   // ✅ ICI on renvoie le rôle
+      }
+    });
   } catch (error) {
-    return res.json({ success: false, message: error.message });
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
+

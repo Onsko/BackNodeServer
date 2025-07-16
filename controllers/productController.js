@@ -8,8 +8,7 @@ import path from "path";
 
 export const createProduct = async (req, res) => {
   try {
-    console.log("Requête reçue : body =", req.body);
-    console.log("Requête reçue : fichier =", req.file);
+
 
     const { name, price, description, category, stock } = req.body;
 
@@ -23,7 +22,7 @@ export const createProduct = async (req, res) => {
       description,
       category,
       stock,
-      imageUrl: `/uploads/${req.file.filename}`, // ✅ URL utilisable dans le navigateur
+      imageUrl: `/${req.file.filename}`, // ✅ URL utilisable dans le navigateur
     });
 
     await product.save();
@@ -42,7 +41,9 @@ export const createProduct = async (req, res) => {
 // ✅ Lister tous les produits
 export const getAllProducts = async (req, res) => {
   try {
-    const products = await Product.find().sort({ createdAt: -1 });
+    console.log('--------------------------------------')
+    const products = await Product.find().populate('category','name');
+    console.log({products})
     res.json({ success: true, products });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -94,13 +95,13 @@ export const EditProduct = async (req, res) => {
     }
 
     if (req.file) {
-      if (product.imageUrl && product.imageUrl !== "/uploads/default.jpg") {
+      if (product.imageUrl && product.imageUrl !== "/default.jpg") {
         const oldImagePath = path.join(process.cwd(), product.imageUrl);
         fs.unlink(oldImagePath, (err) => {
           if (err) console.error("Erreur suppression ancienne image:", err);
         });
       }
-      product.imageUrl = `/uploads/${req.file.filename}`;
+      product.imageUrl = `/${req.file.filename}`;
     }
 
     await product.save();

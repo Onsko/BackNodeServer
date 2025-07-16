@@ -10,7 +10,11 @@ const productSchema = new mongoose.Schema({
     required: true,
   },
   description: String,
-  category: String,
+  category: {
+    type: mongoose.Schema.Types.ObjectId, // c’est un ObjectId
+    ref: 'Category',                      // référence au modèle Category
+    required: true,
+  },
   stock: {
     type: Number,
     default: 0,

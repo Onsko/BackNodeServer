@@ -1,4 +1,3 @@
-// server.js
 import express from "express";
 import cors from "cors";
 import 'dotenv/config';
@@ -10,13 +9,13 @@ import authRouter from './routes/authRoute.js';
 import userRouter from "./routes/userRoutes.js";
 import adminRoutes from './routes/adminRoutes.js';
 import productRoutes from './routes/productRoutes.js';
-import homeRoutes from './routes/temp.js'; // ⚠️ Route utilisée pour les catégories distinctes
+import homeRoutes from './routes/temp.js'; // Route pour catégories distinctes
 
 import bcrypt from "bcryptjs";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import categoryRoutes from './routes/categoryRoutes.js'; // Import ESModule pour catégories
+import categoryRoutes from './routes/categoryRoutes.js'; // Import des routes catégorie
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -35,7 +34,7 @@ const createAdminUser = async () => {
     await User.create({
       name: "OnskAdmin",
       email: "admin1@example.com",
-      password: "$2a$12$uaDZE4aovb7Ery5INdI9R.w9bAzSnS0HlBsK1FRfehLgMMwwcJujS", // hash déjà existant
+      password: hashedPassword,  // Mets ici le hash généré pour cohérence
       role: "admin",
     });
     console.log("Admin created!");
@@ -50,25 +49,24 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 
-// ✅ Routes API principales
+// Routes principales
 app.get('/', (req, res) => res.send("API working !!"));
 app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
 app.use('/api/admin', adminRoutes);
 app.use('/api/products', productRoutes);
 
-// ✅ Route pour les catégories distinctes (ex: /product/distinct-categories)
+// Route pour les catégories distinctes (ex: /product/distinct-categories)
 app.use('/api', homeRoutes);
 
-// ✅ Sert les images produits (Multer)
+// Sert les images produits (upload via Multer)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// ✅ Sert les images catégories (public/category-images)
-//app.use("/category-images", express.static(path.join(__dirname, "public/category-images")));
-+ app.use("/category-images", express.static(path.join(__dirname, "uploads/category-images")));
+// Sert les images catégories (upload via Multer dans uploads/category-images)
+app.use("/category-images", express.static(path.join(__dirname, "uploads/category-images")));
 
-// ✅ Routes pour la gestion des catégories
+// Routes gestion catégories
 app.use('/api/categories', categoryRoutes);
 
-// Démarrage du serveur
+// Démarrage serveur
 app.listen(port, () => console.log(`✅ Server started on PORT: ${port}`));

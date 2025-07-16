@@ -1,13 +1,14 @@
+// controllers/categoryController.js
 import Category from '../models/category.js';
-import path from 'path';
 import fs from 'fs';
 
 export const getAllCategories = async (req, res) => {
   try {
     const categories = await Category.find({});
-    res.json(categories);
+    res.json({ success: true, categories });
   } catch (error) {
-    res.status(500).json({ message: 'Erreur serveur' });
+    console.error('Erreur getAllCategories:', error);
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
   }
 };
 
@@ -16,15 +17,15 @@ export const createCategory = async (req, res) => {
     const { name } = req.body;
 
     if (!req.file) {
-      return res.status(400).json({ message: 'Image requise' });
+      return res.status(400).json({ success: false, message: 'Image requise' });
     }
 
-    // Vérifie si catégorie existe déjà
+    // Vérifie si la catégorie existe déjà
     const existingCat = await Category.findOne({ name });
     if (existingCat) {
       // Supprime le fichier uploadé car doublon
       fs.unlinkSync(req.file.path);
-      return res.status(400).json({ message: 'Cette catégorie existe déjà' });
+      return res.status(400).json({ success: false, message: 'Cette catégorie existe déjà' });
     }
 
     const newCategory = new Category({
@@ -33,8 +34,9 @@ export const createCategory = async (req, res) => {
     });
 
     await newCategory.save();
-    res.status(201).json(newCategory);
+    res.status(201).json({ success: true, category: newCategory });
   } catch (error) {
-    res.status(500).json({ message: 'Erreur serveur' });
+    console.error('Erreur createCategory:', error);
+    res.status(500).json({ success: false, message: 'Erreur serveur' });
   }
 };

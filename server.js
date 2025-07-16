@@ -1,3 +1,4 @@
+// server.js
 import express from "express";
 import cors from "cors";
 import 'dotenv/config';
@@ -14,6 +15,8 @@ import homeRoutes from './routes/temp.js'; // ⚠️ Route utilisée pour les ca
 import bcrypt from "bcryptjs";
 import path from "path";
 import { fileURLToPath } from "url";
+
+import categoryRoutes from './routes/categoryRoutes.js'; // Import ESModule pour catégories
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -54,13 +57,18 @@ app.use('/api/user', userRouter);
 app.use('/api/admin', adminRoutes);
 app.use('/api/products', productRoutes);
 
-// ✅ Route pour les catégories distinctes
-app.use('/api', homeRoutes); // <-- contient /product/distinct-categories
+// ✅ Route pour les catégories distinctes (ex: /product/distinct-categories)
+app.use('/api', homeRoutes);
 
 // ✅ Sert les images produits (Multer)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 // ✅ Sert les images catégories (public/category-images)
-app.use("/category-images", express.static(path.join(__dirname, "public/category-images")));
+//app.use("/category-images", express.static(path.join(__dirname, "public/category-images")));
++ app.use("/category-images", express.static(path.join(__dirname, "uploads/category-images")));
 
+// ✅ Routes pour la gestion des catégories
+app.use('/api/categories', categoryRoutes);
+
+// Démarrage du serveur
 app.listen(port, () => console.log(`✅ Server started on PORT: ${port}`));

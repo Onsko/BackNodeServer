@@ -2,20 +2,19 @@ import express from "express";
 import cors from "cors";
 import 'dotenv/config';
 import cookieParser from "cookie-parser";
-import User from "./models/userModel.js";
-
-import connectDB from './config/mongodb.js';
-import authRouter from './routes/authRoute.js';
-import userRouter from "./routes/userRoutes.js";
-import adminRoutes from './routes/adminRoutes.js';
-import productRoutes from './routes/productRoutes.js';
-import homeRoutes from './routes/temp.js'; // Route pour catégories distinctes
-
 import bcrypt from "bcryptjs";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import categoryRoutes from './routes/categoryRoutes.js'; // Import des routes catégorie
+import User from "./models/userModel.js";
+import connectDB from './config/mongodb.js';
+
+import authRouter from './routes/authRoute.js';
+import userRouter from "./routes/userRoutes.js";
+import adminRoutes from './routes/adminRoutes.js';
+import productRoutes from './routes/productRoutes.js';
+import homeRoutes from './routes/temp.js'; // Route client (produits visibles, catégories visibles)
+import categoryRoutes from './routes/categoryRoutes.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -34,7 +33,7 @@ const createAdminUser = async () => {
     await User.create({
       name: "OnskAdmin",
       email: "admin1@example.com",
-      password: hashedPassword,  // Mets ici le hash généré pour cohérence
+      password: hashedPassword,
       role: "admin",
     });
     console.log("Admin created!");
@@ -54,19 +53,13 @@ app.get('/', (req, res) => res.send("API working !!"));
 app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
 app.use('/api/admin', adminRoutes);
-app.use('/api/products', productRoutes);
-
-// Route pour les catégories distinctes (ex: /product/distinct-categories)
-app.use('/api', homeRoutes);
-
-// Sert les images produits (upload via Multer)
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-
-// Sert les images catégories (upload via Multer dans uploads/category-images)
-app.use("/category-images", express.static(path.join(__dirname, "uploads/category-images")));
-
-// Routes gestion catégories
+app.use('/api/products', productRoutes);  // <-- ici la route avec /admin/all
+app.use('/api/home', homeRoutes);
 app.use('/api/categories', categoryRoutes);
 
-// Démarrage serveur
+// Serveur static pour les images produits
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// Serveur static pour les images catégories
+app.use("/category-images", express.static(path.join(__dirname, "uploads/category-images")));
+
 app.listen(port, () => console.log(`✅ Server started on PORT: ${port}`));

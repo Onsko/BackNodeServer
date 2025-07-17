@@ -13,16 +13,17 @@ export const getAllCategories = async (req, res) => {
 
 export const createCategory = async (req, res) => {
   try {
+    console.log('BODY:', req.body);
+    console.log('FILE:', req.file);
+
     const { name } = req.body;
 
     if (!req.file) {
       return res.status(400).json({ message: 'Image requise' });
     }
 
-    // Vérifie si catégorie existe déjà
     const existingCat = await Category.findOne({ name });
     if (existingCat) {
-      // Supprime le fichier uploadé car doublon
       fs.unlinkSync(req.file.path);
       return res.status(400).json({ message: 'Cette catégorie existe déjà' });
     }
@@ -35,6 +36,8 @@ export const createCategory = async (req, res) => {
     await newCategory.save();
     res.status(201).json(newCategory);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ message: 'Erreur serveur' });
   }
 };
+

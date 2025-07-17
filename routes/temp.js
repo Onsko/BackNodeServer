@@ -3,26 +3,30 @@ import Product from '../models/Product.js';
 
 const router = express.Router();
 
-// Route pour récupérer les catégories distinctes à partir des produits
-router.get('/product/distinct-categories', async (req, res) => {
+// Route pour récupérer catégories distinctes uniquement sur produits visibles (côté client)
+router.get('/distinct-categories', async (req, res) => {
   try {
-    const categories = await Product.distinct('category');
+    const categories = await Product.distinct('category', { isVisible: true });
     res.json({ success: true, categories });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 });
 
-
-// Route pour récupérer les produits paginés
-router.get('/product', async (req, res) => {
+// Route pour récupérer produits visibles paginés (côté client)
+router.get('/', async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 8;
     const skip = (page - 1) * limit;
 
-    const total = await Product.countDocuments();
-    const products = await Product.find().skip(skip).limit(limit);
+    const filter = { isVisible: true };
+
+    const total = await Product.countDocuments(filter);
+    const products = await Product.find(filter)
+      .skip(skip)
+      .limit(limit)
+      .populate('category', 'name');
 
     res.json({
       success: true,

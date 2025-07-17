@@ -1,15 +1,9 @@
 import Product from '../models/Product.js';
-import fs from "fs";
-import path from "path";
-
-
-// ✅ Créer un produit
-// controllers/productController.js
+import fs from 'fs';
+import path from 'path';
 
 export const createProduct = async (req, res) => {
   try {
-
-
     const { name, price, description, category, stock } = req.body;
 
     if (!name || !price || !req.file) {
@@ -22,7 +16,7 @@ export const createProduct = async (req, res) => {
       description,
       category,
       stock,
-      imageUrl: `/${req.file.filename}`, // ✅ URL utilisable dans le navigateur
+      imageUrl: `/${req.file.filename}`,
     });
 
     await product.save();
@@ -34,48 +28,59 @@ export const createProduct = async (req, res) => {
   }
 };
 
-
-
-
-
-// ✅ Lister tous les produits
+// GET all products, with pagination and admin/public distinction
 export const getAllProducts = async (req, res) => {
   try {
-    console.log('--------------------------------------')
-    const products = await Product.find().populate('category','name');
-    console.log({products})
-    res.json({ success: true, products });
-  } catch (err) {
-    res.status(500).json({ success: false, message: err.message });
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    // Distinction admin/public selon query param 'admin'
+    const isAdmin = req.query.admin === 'true';
+
+    let filter = {};
+    if (!isAdmin) {
+      // Pour public, filtre visible uniquement
+      filter = { isVisible: true };
+    }
+
+    const total = await Product.countDocuments(filter);
+
+    const products = await Product.find(filter)
+      .skip(skip)
+      .limit(limit)
+      .populate('category', 'name');
+
+    res.json({
+      success: true,
+      products,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
+      totalItems: total,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
-// ✅ Obtenir un produit par ID
 export const getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
-    if (!product) {
-      return res.status(404).json({ success: false, message: "Produit non trouvé." });
-    }
+    if (!product) return res.status(404).json({ success: false, message: "Produit non trouvé." });
+
     res.status(200).json(product);
   } catch (err) {
     res.status(400).json({ success: false, message: "Requête invalide." });
   }
 };
 
-// ✅ Modifier un produit
 export const EditProduct = async (req, res) => {
   try {
-    console.log("Requête reçue : body =", req.body);
-    console.log("Requête reçue : fichier =", req.file);
-
     const productId = req.params.id;
     const { name, price, description, category, stock } = req.body;
 
     const product = await Product.findById(productId);
-    if (!product) {
-      return res.status(404).json({ message: "Produit non trouvé" });
-    }
+    if (!product) return res.status(404).json({ message: "Produit non trouvé" });
 
     if (!name || !price) {
       return res.status(400).json({ message: "Les champs nom et prix sont obligatoires." });
@@ -96,7 +101,7 @@ export const EditProduct = async (req, res) => {
 
     if (req.file) {
       if (product.imageUrl && product.imageUrl !== "/default.jpg") {
-        const oldImagePath = path.join(process.cwd(), product.imageUrl);
+        const oldImagePath = path.join(process.cwd(), 'uploads', product.imageUrl.replace('/', ''));
         fs.unlink(oldImagePath, (err) => {
           if (err) console.error("Erreur suppression ancienne image:", err);
         });
@@ -113,8 +118,6 @@ export const EditProduct = async (req, res) => {
   }
 };
 
-
-// ✅ Supprimer un produit
 export const deleteProduct = async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
@@ -124,17 +127,43 @@ export const deleteProduct = async (req, res) => {
   }
 };
 
-// ✅ Changer la visibilité
 export const toggleVisibility = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id);
-    if (!product) {
-      return res.status(404).json({ success: false, message: "Produit non trouvé." });
-    }
-    product.isVisible = !product.isVisible;  // toggle isVisible
+    if (!product) return res.status(404).json({ success: false, message: "Produit non trouvé." });
+
+    product.isVisible = !product.isVisible;
     await product.save();
+
     res.json({ success: true, isVisible: product.isVisible });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+// --- Nouvelle fonction pour route admin /admin/all ---
+// En plus de l’existant
+export const getAllProductsAdmin = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const total = await Product.countDocuments(); // sans filtre
+    const products = await Product.find()
+      .skip(skip)
+      .limit(limit)
+      .populate('category', 'name');
+
+    res.json({
+      success: true,
+      products,
+      totalPages: Math.ceil(total / limit),
+      currentPage: page,
+      totalItems: total,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+

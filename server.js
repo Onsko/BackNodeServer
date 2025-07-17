@@ -2,23 +2,29 @@ import express from "express";
 import cors from "cors";
 import 'dotenv/config';
 import cookieParser from "cookie-parser";
-import User from "./models/userModel.js"
+import bcrypt from "bcryptjs";
+import path from "path";
+import { fileURLToPath } from "url";
 
+import User from "./models/userModel.js";
+import connectDB from './config/mongodb.js';
 
-import connectDB from './config/mongodb.js'
-import authRouter from './routes/authRoute.js'
+import authRouter from './routes/authRoute.js';
 import userRouter from "./routes/userRoutes.js";
 import adminRoutes from './routes/adminRoutes.js';
-import bcrypt from "bcryptjs";
+import productRoutes from './routes/productRoutes.js';
+import homeRoutes from './routes/temp.js'; // Route client (produits visibles, catégories visibles)
+import categoryRoutes from './routes/categoryRoutes.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
+const app = express();
+const port = process.env.PORT || 4000;
 
-const app= express();
-const port= process.env.PORT || 4000 
 connectDB();
 
-const allowedOrigins= ['http://localhost:5173']
-
+const allowedOrigins = ['http://localhost:5173'];
 
 const createAdminUser = async () => {
   const adminExists = await User.findOne({ email: "admin1@example.com" });
@@ -27,7 +33,7 @@ const createAdminUser = async () => {
     await User.create({
       name: "OnskAdmin",
       email: "admin1@example.com",
-      password: "$2a$12$uaDZE4aovb7Ery5INdI9R.w9bAzSnS0HlBsK1FRfehLgMMwwcJujS",
+      password: hashedPassword,
       role: "admin",
     });
     console.log("Admin created!");
@@ -38,16 +44,22 @@ const createAdminUser = async () => {
 
 createAdminUser();
 
-
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({ origin:allowedOrigins, credentials: true }));
+app.use(cors({ origin: allowedOrigins, credentials: true }));
 
-
-// API endpoints
-app.get('/',(req,res)=> res.send("API working !!"));
-app.use('/api/auth', authRouter) // pour l'auth
-app.use('/api/user', userRouter) // pour les data du user
+// Routes principales
+app.get('/', (req, res) => res.send("API working !!"));
+app.use('/api/auth', authRouter);
+app.use('/api/user', userRouter);
 app.use('/api/admin', adminRoutes);
+app.use('/api/products', productRoutes);  // <-- ici la route avec /admin/all
+app.use('/api/home', homeRoutes);
+app.use('/api/categories', categoryRoutes);
 
-app.listen(port, ()=> console.log(`Server started on PORT:${port}`));
+// Serveur static pour les images produits
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// Serveur static pour les images catégories
+app.use("/category-images", express.static(path.join(__dirname, "uploads/category-images")));
+
+app.listen(port, () => console.log(`✅ Server started on PORT: ${port}`));

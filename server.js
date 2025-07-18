@@ -15,6 +15,8 @@ import adminRoutes from './routes/adminRoutes.js';
 import productRoutes from './routes/productRoutes.js';
 import homeRoutes from './routes/temp.js'; // Route client (produits visibles, catégories visibles)
 import categoryRoutes from './routes/categoryRoutes.js';
+import orderRoutes from './routes/orderRoutes.js';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -56,6 +58,8 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/products', productRoutes);  // <-- ici la route avec /admin/all
 app.use('/api/home', homeRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/orders', orderRoutes);
+
 
 // Serveur static pour les images produits
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));

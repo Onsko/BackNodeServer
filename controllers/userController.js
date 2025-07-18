@@ -10,17 +10,7 @@ export const getUserData = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Utilisateur non trouvé' });
     }
 
-    // ✅ Retourner les données utilisateur
-    res.json({
-      success: true,
-      userData: {
-        id: user._id,
-        name: user.name,
-        isAccountVerified: user.isAccountVerified,
-        email: user.email,
-        role: user.role,
-      },
-    });
+ 
 
     return res.json({
       success: true,
@@ -28,6 +18,7 @@ export const getUserData = async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
+        isAccountVerified: user.isAccountVerified,
         role: user.role   // ✅ ICI on renvoie le rôle
       }
     });

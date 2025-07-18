@@ -49,7 +49,8 @@ await transporter.sendMail(mailOptions);
 
 export const sendVerifyOtp = async (req, res) => {
   try {
-    const userId = req.userId; // ✅ Injecté par le middleware userAuth
+    // Correct ici :
+    const userId = req.user._id;  // req.userId => req.user._id
 
     const user = await userModel.findById(userId);
 
@@ -61,10 +62,10 @@ export const sendVerifyOtp = async (req, res) => {
       return res.json({ success: false, message: "Account already verified" });
     }
 
-    const otp = String(Math.floor(100000 + Math.random() * 900000)); // ✅ Génération OTP 6 chiffres
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
 
     user.verifyOtp = otp;
-    user.verifyOtpExpireAt = Date.now() + 24 * 60 * 60 * 1000; // 24h de validité
+    user.verifyOtpExpireAt = Date.now() + 24 * 60 * 60 * 1000; // 24h
 
     await user.save();
 
@@ -72,10 +73,10 @@ export const sendVerifyOtp = async (req, res) => {
       from: process.env.SENDER_EMAIL,
       to: user.email,
       subject: 'Account Verification OTP Sent on Email',
-      text: `Your OTP is ${otp}. Verify your account using this OTP.`
+      text: `Your OTP is ${otp}. Verify your account using this OTP.`,
     };
 
-    await transporter.sendMail(mailOptions); // ✅ Envoi e-mail via nodemailer
+    await transporter.sendMail(mailOptions);
 
     return res.json({ success: true, message: 'Verification OTP sent successfully' });
 
@@ -83,6 +84,7 @@ export const sendVerifyOtp = async (req, res) => {
     return res.status(500).json({ success: false, message: error.message });
   }
 };
+
 
 
 export const verifyEmail = async (req,res)=>{
@@ -172,7 +174,7 @@ export const sendResetOtp = async (req,res)=>{
 //Reset User Password
 export const resetPassword = async (req,res)=>{
     const {email,otp,newPassword}=req.body;
-
+console.log(req.body)
 
     if(!email || !otp || !newPassword){
         return res.json ({success:false, message:'Email, OTP, and new password are required'})

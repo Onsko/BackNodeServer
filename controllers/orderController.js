@@ -4,27 +4,43 @@ import User from '../models/userModel.js';
 import Product from '../models/Product.js'; // ✅ à ajouter absolument
 
 // 🟢 Création de commande
+
+
 export const createOrder = async (req, res) => {
   try {
-    const { products, totalAmount } = req.body;
+    const { products } = req.body; // ❌ on ne récupère plus totalAmount du client
     const userId = req.user._id;
 
-    // Vérification de stock avant création
+    // Vérification de stock et calcul du total
+    let totalAmount = 0;
+
     for (const item of products) {
       const prod = await Product.findById(item.productId);
-      if (!prod || prod.stock < item.quantity) {
-        return res.status(400).json({ success: false, message: `Produit "${item.name}" en rupture de stock.` });
+      if (!prod) {
+        return res.status(404).json({ success: false, message: `Produit avec ID ${item.productId} introuvable.` });
       }
+
+      if (prod.stock < item.quantity) {
+        return res.status(400).json({
+          success: false,
+          message: `Produit "${prod.name}" en rupture de stock. Stock disponible : ${prod.stock}`,
+        });
+      }
+
+      totalAmount += prod.price * item.quantity; // calcul du montant total
     }
 
+    // Récupérer l'utilisateur
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ success: false, message: "Utilisateur non trouvé" });
     }
 
+    // Création de la commande
     const order = new Order({ userId, products, totalAmount });
     await order.save();
 
+    // Envoi d'e-mail de confirmation
     const mailOptions = {
       from: process.env.SENDER_EMAIL,
       to: user.email,
@@ -36,11 +52,13 @@ export const createOrder = async (req, res) => {
     await transporter.sendMail(mailOptions);
 
     res.status(201).json({ success: true, order });
+
   } catch (err) {
     console.error("Erreur création commande:", err);
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
 
 // 🟢 Commandes de l'utilisateur connecté
 export const getUserOrders = async (req, res) => {

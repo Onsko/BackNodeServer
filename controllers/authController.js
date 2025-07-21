@@ -264,6 +264,21 @@ export const login = async (req, res) => {
   }
 };
 
+// ✅ Nouvelle fonction pour renvoyer les données utilisateur
+export const getUserData = async (req, res) => {
+  try {
+    const user = await userModel.findById(req.user._id).select("-password");
+    if (!user) {
+      return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    return res.json({ success: true, user });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+
 //logOut
 export const logout = async (req,res)=>{
     try {
@@ -277,4 +292,7 @@ export const logout = async (req,res)=>{
     } catch (error) {
         return res.json({success:false,message:error.message })
     }
+
+
+    
 }

@@ -1,11 +1,11 @@
-// routes/categoryRoutes.js
 import express from 'express';
 import multer from 'multer';
 import path from 'path';
 
+import * as categoryController from '../controllers/categoryController.js';
+
 const router = express.Router();
 
-// Config Multer pour stocker dans /uploads/category-images
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, 'uploads/category-images');
@@ -18,11 +18,13 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// Importe ton controller (en ESModule aussi)
-// suppose que categoryController.js est aussi converti en ESModule avec export par défaut
-import * as categoryController from '../controllers/categoryController.js';
-
 router.get('/', categoryController.getAllCategories);
 router.post('/', upload.single('image'), categoryController.createCategory);
+
+// Route pour modifier la catégorie (image optionnelle)
+router.put('/:id', upload.single('image'), categoryController.updateCategory);
+
+// Route pour supprimer la catégorie
+router.delete('/:id', categoryController.deleteCategory);
 
 export default router;

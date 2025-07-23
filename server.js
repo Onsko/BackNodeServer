@@ -9,14 +9,15 @@ import { fileURLToPath } from "url";
 import User from "./models/userModel.js";
 import connectDB from './config/mongodb.js';
 
+// 🔹 Importation des routes
 import authRouter from './routes/authRoute.js';
 import userRouter from "./routes/userRoutes.js";
 import adminRoutes from './routes/adminRoutes.js';
 import productRoutes from './routes/productRoutes.js';
-import homeRoutes from './routes/temp.js'; // Route client (produits visibles, catégories visibles)
+import homeRoutes from './routes/temp.js'; // Produits + catégories visibles pour client
 import categoryRoutes from './routes/categoryRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
-
+import promotionRoutes from './routes/promotionRoutes.js'; // ✅ ta route promotion ici
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -38,32 +39,35 @@ const createAdminUser = async () => {
       password: hashedPassword,
       role: "admin",
     });
-    console.log("Admin created!");
+    console.log("✅ Admin créé !");
   } else {
-    console.log("Admin already exists.");
+    console.log("ℹ️ Admin déjà existant.");
   }
 };
 
 createAdminUser();
 
+// 🔹 Middleware globaux
 app.use(express.json());
 app.use(cookieParser());
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 
-// Routes principales
-app.get('/', (req, res) => res.send("API working !!"));
+// 🔹 Routes
+app.get('/', (req, res) => res.send("🟢 API en ligne !"));
 app.use('/api/auth', authRouter);
 app.use('/api/user', userRouter);
 app.use('/api/admin', adminRoutes);
-app.use('/api/products', productRoutes);  // <-- ici la route avec /admin/all
+app.use('/api/products', productRoutes);
 app.use('/api/home', homeRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/promotions', promotionRoutes); // ✅ La route de promotions ici
 
-
-// Serveur static pour les images produits
+// 🔹 Fichiers statiques (images, etc.)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
-// Serveur static pour les images catégories
 app.use("/category-images", express.static(path.join(__dirname, "uploads/category-images")));
 
-app.listen(port, () => console.log(`✅ Server started on PORT: ${port}`));
+// ✅ Démarrage du serveur
+app.listen(port, () => {
+  console.log(`🚀 Serveur backend lancé sur http://localhost:${port}`);
+});

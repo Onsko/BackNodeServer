@@ -1,4 +1,3 @@
-// backend/models/Order.js
 import mongoose from 'mongoose';
 
 const orderSchema = new mongoose.Schema({
@@ -9,13 +8,13 @@ const orderSchema = new mongoose.Schema({
   },
   products: [
     {
-      productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product' },
-      name: String,
-      quantity: Number,
-      price: Number,
+      productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Product', required: true },
+      name: { type: String, required: true },
+      quantity: { type: Number, required: true },
+      price: { type: Number, required: true },
     },
   ],
-  totalAmount: Number,
+  totalAmount: { type: Number, required: true },
   status: {
     type: String,
     enum: ['En attente', 'Confirmée', 'Expédiée', 'Annulée'],

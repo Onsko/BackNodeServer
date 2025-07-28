@@ -18,6 +18,8 @@ import homeRoutes from './routes/temp.js'; // Produits + catégories visibles po
 import categoryRoutes from './routes/categoryRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import promotionRoutes from './routes/promotionRoutes.js'; // ✅ ta route promotion ici
+import promoCodeRoutes from './routes/promoCodeRoutes.js';
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -62,6 +64,8 @@ app.use('/api/home', homeRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/promotions', promotionRoutes); // ✅ La route de promotions ici
+app.use('/api/promocodes', promoCodeRoutes);
+
 
 // 🔹 Fichiers statiques (images, etc.)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));

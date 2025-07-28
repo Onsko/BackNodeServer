@@ -2,7 +2,7 @@ import express from 'express';
 import { getAllOrders, updateOrderStatus, createOrder, getUserOrders , cancelOrder} from '../controllers/orderController.js';
 import userAuth from '../middleware/userAuth.js';
 import isAdmin from '../middleware/isAdmin.js';
-
+///orderRoutes.js
 
 const router = express.Router();
 
@@ -17,7 +17,9 @@ router.get('/user', userAuth, getUserOrders);
 router.delete('/cancel/:orderId', userAuth, cancelOrder);
 // Route pour récupérer les commandes de l'utilisateur connecté
 router.get('/my', userAuth, getUserOrders);
-router.put('/cancel', userAuth, cancelOrder);
+//router.put('/cancel', userAuth, cancelOrder);
+router.post('/cancel', userAuth, cancelOrder);
+
 
 
 export default router;

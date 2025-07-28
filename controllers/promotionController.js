@@ -1,6 +1,6 @@
 import Promotion from '../models/Promotion.js';
 import Product from '../models/Product.js';
-
+//promotionController.js
 // ✅ Créer une promotion
 export const createPromotion = async (req, res) => {
   try {

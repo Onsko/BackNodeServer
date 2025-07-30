@@ -7,6 +7,7 @@ const promoCodeSchema = new mongoose.Schema({
   validFrom: { type: Date, required: true },
   validUntil: { type: Date, required: true },
   isActive: { type: Boolean, default: true },
+  usedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }] // ✅ Enregistrer les utilisateurs qui ont utilisé ce code
 });
 
 export default mongoose.model('PromoCode', promoCodeSchema);

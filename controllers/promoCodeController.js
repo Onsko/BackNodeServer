@@ -1,6 +1,6 @@
 import PromoCode from '../models/PromoCode.js';
 
-// Créer un nouveau code promo
+// ✅ Créer un nouveau code promo
 export const createPromoCode = async (req, res) => {
   try {
     const { code, discountAmount, isPercentage, validFrom, validUntil, isActive } = req.body;
@@ -12,20 +12,21 @@ export const createPromoCode = async (req, res) => {
   }
 };
 
-// Récupérer tous les codes promo
+// ✅ Récupérer tous les codes promo
 export const getPromoCodes = async (req, res) => {
   try {
-    const promos = await PromoCode.find().sort({ validUntil: -1 });
+    const promos = await PromoCode.find().populate('usedBy', 'name email').sort({ validUntil: -1 });
     res.json(promos);
   } catch (err) {
     res.status(500).json({ message: "Erreur récupération codes promo", error: err.message });
   }
 };
 
-// Valider un code promo côté client
+// ✅ Valider un code promo côté client (avec userAuth obligatoire)
 export const validatePromoCode = async (req, res) => {
   try {
     const { code } = req.body;
+    const userId = req.user._id;
     const now = new Date();
 
     const promo = await PromoCode.findOne({ code });
@@ -38,13 +39,20 @@ export const validatePromoCode = async (req, res) => {
       return res.status(400).json({ error: 'Code expiré ou non encore actif' });
     }
 
+    if (promo.usedBy.includes(userId)) {
+      return res.status(400).json({ error: 'Vous avez déjà utilisé ce code promo.' });
+    }
+
+    promo.usedBy.push(userId);
+    await promo.save();
+
     res.json(promo);
   } catch (err) {
     res.status(500).json({ message: 'Erreur validation code promo', error: err.message });
   }
 };
 
-// Activer/désactiver un code promo
+// ✅ Activer/désactiver un code promo
 export const togglePromoCode = async (req, res) => {
   try {
     const promo = await PromoCode.findById(req.params.id);
@@ -59,7 +67,7 @@ export const togglePromoCode = async (req, res) => {
   }
 };
 
-// Supprimer un code promo
+// ✅ Supprimer un code promo
 export const deletePromoCode = async (req, res) => {
   try {
     const deleted = await PromoCode.findByIdAndDelete(req.params.id);

@@ -13,8 +13,7 @@ const router = express.Router();
 
 router.post('/', userAuth, isAdmin, createPromoCode);
 router.get('/', userAuth, isAdmin, getPromoCodes);
-router.post('/validate', validatePromoCode);
-
+router.post('/validate', userAuth, validatePromoCode);
 router.patch('/toggle/:id', userAuth, isAdmin, togglePromoCode);
 router.delete('/:id', userAuth, isAdmin, deletePromoCode);
 
